@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">安卓版扫雷0.1</string>
+    <string name="game_title">扫雷</string>
+    <string name="default_game_title">自定义难度</string>
+    <string name="easy_mode_button_label">简单</string>
+    <string name="medium_mode_button_label">中等</string>
+    <string name="hard_mode_button_label">困难</string>
+    <string name="time_prompt">已用时间</string>
+    <string name="mine_prompt">剩余雷数</string>
+    <string name="timer_start">0</string>
+
+
+
+</resources>
