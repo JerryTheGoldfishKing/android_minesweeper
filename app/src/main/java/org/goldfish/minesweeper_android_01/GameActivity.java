@@ -40,7 +40,7 @@ public class GameActivity extends AppCompatActivity implements Resources{
         int mines = intent.getIntExtra("mines", 10);
         String difficulty_description = intent.getStringExtra("difficulty_description");
 
-        controller = new Controller(height, width, mines);
+        controller = new Controller(height, width, mines,difficulty_description);
         controller.setActivity(this);
 
         Toast.makeText(this, String.format(Locale.CHINA, "模式: %s 高度: %d, 宽度: %d, 雷数: %d", difficulty_description, height, width, mines), Toast.LENGTH_SHORT).show();

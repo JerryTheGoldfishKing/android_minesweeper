@@ -8,6 +8,8 @@ import androidx.annotation.Nullable;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Map;
+
 
 public class DBManager extends SQLiteOpenHelper {
 	final static int DB_VERSION = 1;
@@ -15,9 +17,18 @@ public class DBManager extends SQLiteOpenHelper {
 	private static DBManager manager = null;
 	final String GAME_INFO_TABLE_NAME = "game_info";
 	String tableName;
+	private Map<String,String> SQLMetaData;
 
 	private DBManager(@Nullable Context context, @Nullable String DBName, @NotNull String tableName) {
 		super(context, DBName, null, DB_VERSION);
+		this.tableName = tableName;
+		SQLMetaData= Map.of(
+				"height","INTEGER",
+				"width","INTEGER",
+				"mines","INTEGER",
+				"difficulty_description","TEXT"
+				,"end_time","INTEGER"
+		);
 	}
 
 	public static DBManager getInstance() {
@@ -30,18 +41,15 @@ public class DBManager extends SQLiteOpenHelper {
 		return manager;
 	}
 
+	public void onWinWrite(MineSweeperGameInfo info){
+		SQLiteDatabase db = getWritableDatabase();
+		Object[] bindArgs = {info.getHeight(),info.getWidth(),info.getMineCount(),info.getDifficultyDescription(),info.getTime()};
+		String insertSQL = "INSERT INTO " + GAME_INFO_TABLE_NAME + " (height,width,mines,difficulty_description,end_time) VALUES (?,?,?,?,?)";
+		db.execSQL(insertSQL,bindArgs);
+	}
+
 	@Override
 	public void onCreate(SQLiteDatabase db) {
-		String createEntryInfoSQL = "CREATE TABLE IF NOT EXISTS " + tableName + """
-				(
-					id INTEGER PRIMARY KEY AUTOINCREMENT,
-					start TIMESTAMP,
-				 	end TIMESTAMP,
-				  	latitude DOUBLE,
-				   	longitude DOUBLE
-				)
-""";
-		db.execSQL(createEntryInfoSQL);
 		String createGameInfoSQL =" CREATE TABLE IF NOT EXISTS " + GAME_INFO_TABLE_NAME + """
 				(
 					id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -49,11 +57,7 @@ public class DBManager extends SQLiteOpenHelper {
 					width INTEGER,
 					mines INTEGER,
 					difficulty_description TEXT,
-					winner TEXT,
-					longitude DOUBLE,
-					latitude DOUBLE,
-					start TIMESTAMP,
-					end_time TIMESTAMP
+					end_time TEXT
 				)""";
 		db.execSQL(createGameInfoSQL);
 
@@ -62,7 +66,7 @@ public class DBManager extends SQLiteOpenHelper {
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-		String dropSQL = "DROP TABLE IF EXISTS " + tableName;
+		String dropSQL = "DROP TABLE IF EXISTS " + GAME_INFO_TABLE_NAME;
 		db.execSQL(dropSQL);
 		onCreate(db);
 	}

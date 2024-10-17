@@ -26,6 +26,7 @@ public class Controller {
     public static String thrower = "GOLDFISH_CAUGHT";
 
     private final int height, width, mines;
+    private String difficulty_description;
     Grid[][] grids;
     Set<Grid> finishedGrids;
     GameActivity activity;
@@ -40,11 +41,13 @@ public class Controller {
      * @param mines 雷区的雷数
      */
 
-    public Controller(int height, int width, int mines) {
+    public Controller(int height, int width, int mines ,String difficulty_description) {
         this.height = height;
         this.width = width;
-        this.used = 0;
+        this.difficulty_description = difficulty_description;
         this.mines = mines;
+
+        this.used = 0;
         this.grids = new Grid[height][width];
         this.finished = false;
     }
@@ -305,8 +308,7 @@ public class Controller {
                 Log.w("Controller:open", "Null stored in neighbor");
                 continue;
             }
-            Log.i("Controller:open", "Locking mutex for grid: " + current);
-            current.open(); // Check if this leads to deadlocks or accesses destroyed objects
+            current.open();
 
             visited[current.getRow()][current.getCol()] = true;
             if (current.getSurroundingMines() != 0) continue;
@@ -315,7 +317,11 @@ public class Controller {
                 if (visited[potentials.getRow()][potentials.getCol()]) continue;
                 queue.add(potentials);
             }
+            //在日志中输出雷区信息
             System.out.println(activity.getController());
+        }
+        if(isFinished()){
+            checkFinished();
         }
     }
 
@@ -428,6 +434,8 @@ public class Controller {
         long timeUsed = chronometer.getDrawingTime() - chronometer.getBase();
         timeUsed /= 1000;
         String content = "用时：" + timeUsed + "秒";
+
+        DBManager.getInstance().onWinWrite(new Result(difficulty_description,mines,height,width,timeUsed));
 
         builder.setTitle(title);
         builder.setMessage(content);

@@ -18,5 +18,6 @@
     <string name="timer_start">0</string>
     <string name="exit_button_label">退出</string>
     <string name="restart_button_label">重开</string>
+    <string name="the_game_icon">游戏图标</string>
 
 </resources>
