@@ -57,7 +57,7 @@ public class DBManager extends SQLiteOpenHelper {
 					width INTEGER,
 					mines INTEGER,
 					difficulty_description TEXT,
-					end_time TEXT
+					end_time TIMESTAMP
 				)""";
 		db.execSQL(createGameInfoSQL);
 
