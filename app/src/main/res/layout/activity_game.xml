@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--activity_game.xml-->
+<?xml version="1.0" encoding="utf-8"?><!--activity_game.xml-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/game"
@@ -8,15 +7,22 @@
     android:orientation="vertical"
     tools:context=".GameActivity">
 
-    <TextView
-        android:id="@+id/game_title"
-        android:layout_width="300sp"
-        android:layout_height="40sp"
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
 
-        android:padding="5sp"
-        android:text="@string/default_game_title"
+        <TextView
+            android:id="@+id/game_title"
+            android:layout_width="wrap_content"
+            android:layout_height="80sp"
 
-        android:textSize="20sp" />
+            android:padding="5sp"
+            android:text="@string/default_game_title"
+
+            android:textSize="40sp" />
+
+    </LinearLayout>
+
 
     <LinearLayout
         android:id="@+id/main_layout"
@@ -25,21 +31,21 @@
         android:textAlignment="center">
 
         <TextView
-            android:layout_width="123dp"
-            android:layout_height="45dp"
+            android:layout_width="120sp"
+            android:layout_height="40sp"
             android:text="@string/mine_prompt"
             android:textSize="25sp" />
 
         <TextView
             android:id="@+id/mine_counter"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="40sp"
+            android:layout_height="40sp"
             android:text="@string/timer_start"
             android:textSize="25sp" />
 
         <TextView
-            android:layout_width="112dp"
-            android:layout_height="47dp"
+            android:layout_width="100sp"
+            android:layout_height="40sp"
             android:text="@string/time_prompt"
             android:textSize="25sp" />
 
@@ -52,18 +58,50 @@
 
 
     </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="75dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/exit_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="20sp"
+            android:text="@string/exit_button_label" />
+
+        <View
+            android:id="@+id/divider"
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@color/white" />
+
+        <Button
+
+            android:id="@+id/restart_button"
+            android:layout_width="8dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="20sp"
+            android:text="@string/restart_button_label" />
+    </LinearLayout>
+
     <HorizontalScrollView
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        >
+        android:layout_height="wrap_content">
+
         <ScrollView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
+
             <GridLayout
                 android:id="@+id/grids_field"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                />
+                android:layout_height="wrap_content" />
         </ScrollView>
     </HorizontalScrollView>
 </LinearLayout>

@@ -7,12 +7,20 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
+
+/**
+ * 控制器<br/>
+ * 接受点击 长按等事件<br/>
+ * 控制游戏的进行
+ */
 
 public class Controller {
     public static String thrower = "GOLDFISH_CAUGHT";
@@ -25,9 +33,12 @@ public class Controller {
     private int used;
     private boolean finished;
 
-    public boolean isFinished() {
-        return finished;
-    }
+    /**
+     * 构造函数
+     * @param height 雷区的高度
+     * @param width 雷区的宽度
+     * @param mines 雷区的雷数
+     */
 
     public Controller(int height, int width, int mines) {
         this.height = height;
@@ -38,15 +49,31 @@ public class Controller {
         this.finished = false;
     }
 
+    public boolean isFinished() {
+        return finished=(finishedGrids.size()+mines==height*width);
+    }
+
+    /**
+     * 设置游戏主窗口
+     * @param activity 指定的窗口
+     */
     public void setActivity(GameActivity activity) {
         this.activity = activity;
     }
+    /**
+     * 添加格子
+     * @param grid 要添加的格子
+     */
 
     public void add(Grid grid) {
         if (used >= height * width) throw new RuntimeException("Array Already Full");
         grids[used / width][used % width] = grid;
         used++;
     }
+
+    /**
+     * 寻找周围格子
+     */
 
     public void findSurroundings() {
         if (used < width * height) throw new RuntimeException("Array Not Full");
@@ -88,9 +115,24 @@ public class Controller {
         }
     }
 
+    /**
+     * 获取格子
+     * @param index 格子的索引 <br/>
+     *              从左上角开始 从左到右 从上到下 比如<br/>
+     *              0 1 2 3 4 5 6 7 8<br/>
+     *              9 10 11 12 13 14 15 16 17<br/>
+     * @return 格子
+     */
     public Grid getGrid(int index) {
         return getGrid(index / width, index % width);
     }
+
+    /**
+     *
+     * @param row 格子的行号
+     * @param col 格子的列号
+     * @return 格子的对象
+     */
 
     public Grid getGrid(int row, int col) {
         try {
@@ -100,10 +142,19 @@ public class Controller {
         }
     }
 
+    /**
+     * 获取计时器
+     * @return 计时器
+     */
+
     public Chronometer getChronometer() {
         return chronometer;
     }
 
+    /**
+     * 添加计时器
+     * @param chronometer 计时器
+     */
     public void setChronometer(Chronometer chronometer) {
         this.chronometer = chronometer;
         if (chronometer == null) {
@@ -112,6 +163,11 @@ public class Controller {
         }
         chronometer.setBase(SystemClock.elapsedRealtime());
     }
+
+    /**
+     * 生成雷 并开始游戏
+     * @param start 用户选中的格子 此格及周围不得为雷
+     */
 
     public void generateMine(Grid start) {
         Log.i("Controller:generateMine", "generateMine: " + "<" + start.getRow() + '-' + start.getCol() + '>');
@@ -156,7 +212,11 @@ public class Controller {
             getGrid(index).countSurroundings();
         }
 
-        open(start);
+        try {
+            open(start);
+        }catch (MineTriggeredException e){
+            Log.w("Controller:generateMine", "MineTriggeredException");
+        }
         for (int index = 0; index < width * height; index++) {
             getGrid(index).updateState();
             getGrid(index).prepared();
@@ -166,6 +226,10 @@ public class Controller {
 
     }
 
+    /**
+     * 调试用 输出地雷分布
+     * @return
+     */
     @NonNull
     public String toString() {
         StringBuilder buffer = new StringBuilder();
@@ -177,11 +241,29 @@ public class Controller {
         return buffer.toString();
     }
 
-    public void open(Grid start) {
+    /**
+     * 打开格子
+     * 默认游戏没有开始
+     * @param start 起始格子
+     * @throws MineTriggeredException 触雷
+     */
+    public void open(Grid start) throws MineTriggeredException {
         open(start, false);
     }
+    /**
+     * 打开格子
+     * @param started 是否已经开始游戏<br/>
+     *                如果已经开始游戏 则检查周围格子插旗数是否等于周围雷数<br/>
+     *                再决定是否打开周围格子<br/>
+     * @param start 起始格子<br/>
+     *              如果格子周围有雷数为0 则打开周围格子<br/>
+     *              如果格子已经打开 则检查周围格子插旗数是否等于周围雷数<br/>
+     *              如果格子周围插旗数不等于周围雷数 则提示<br/>
+     *              如果格子周围插旗数等于周围雷数 则打开周围格子<br/>
+     * @throws MineTriggeredException 触雷
+     */
 
-    public void open(Grid start, boolean started) {
+    public void open(Grid start, boolean started) throws MineTriggeredException{
         Queue<Grid> queue = new LinkedList<>();
         boolean[][] visited = new boolean[height][width];
         if (finished) {
@@ -191,8 +273,7 @@ public class Controller {
         if (started) {
             if (start.getState() == Grid.STATE.FLAG) return;
             int flagCount = 0;
-            //打开这一格周围没插旗的格子
-            for (Grid n : start.getNeighbors()) {
+	        for (Grid n : start.getNeighbors()) {
                 switch (n.getState()) {
                     case FLAG:
                         flagCount++;
@@ -238,7 +319,12 @@ public class Controller {
         }
     }
 
-    public void addFinished(Grid grid) {
+    /**
+     * 添加非雷且已经打开的格子
+     * @param grid 要添加的格子
+     */
+
+    public void addFinished(@NonNull Grid grid) {
         switch (grid.getState()) {
             case FLAG:
                 if (!grid.isMine()) return;
@@ -248,9 +334,15 @@ public class Controller {
                 break;
         }
         finishedGrids.add(grid);
-        checkFinished();
+//        checkFinished();
         updateProgress();
     }
+
+    /**
+     * 计算插旗数 给{@code updateProgress()}调用
+     *
+     * @return 插旗数
+     */
 
     public int countFlagTotal() {
         int count = 0;
@@ -261,36 +353,42 @@ public class Controller {
         }
         return count;
     }
+    /**
+     * 数总共插旗数 给用户提示游戏进度
+     */
 
     public void updateProgress() {
         activity.getMinePrompt().setText(String.valueOf(mines - countFlagTotal()));
     }
 
 
-    //结算
+    /**
+     * 检查游戏是否结束
+     */
     private void checkFinished() {
         for (Grid[] row : grids) {
             for (Grid grid : row) {
-                switch (grid.getState()) {
-                    case OPEN:
-                        if (!grid.isMine())
-                            continue;
-                        Lose();
-                        return;
-                    default:
-                        if (!grid.isMine()) return;
-                        break;
+                if (Objects.requireNonNull(grid.getState()) == Grid.STATE.OPEN) {
+                    if (!grid.isMine()) continue;
+                    Lose();
+                    return;
+                } else {
+                    if (!grid.isMine()) return;
                 }
             }
         }
         this.finished = true;
-        dialog(true).show();
+        getFinishDialog(true).show();
     }
+
+    /**
+     * 输掉游戏
+     */
 
     void Lose() {
         this.finished = true;
         reveal();
-        dialog(false).show();
+        getFinishDialog(false).show();
     }
 
     void updateState() {
@@ -299,36 +397,51 @@ public class Controller {
                 g.updateState();
         }
     }
+    /**
+     * 显示所有格子 告诉用户输掉的原因
+     */
 
     void reveal() {
         for (Grid[] row : grids) {
             for (Grid g : row) {
-                g.open(true);
-                g.updateState();
+                try {
+                    g.open(true);
+                    g.updateState();
+                } catch (MineTriggeredException exception) {
+                    Log.w("Controller:reveal", "MineTriggeredException");
+                }
             }
         }
     }
 
-    AlertDialog dialog(boolean win) {
+    AlertDialog getFinishDialog(boolean win) {
+        finished = true;
+        for (Grid[] row : grids) {
+            for (Grid g : row) {
+                g.setOnClickListener(null);
+                g.setOnLongClickListener(null);
+            }
+        }
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         String title = win ? "您赢了" : "您输了";
         chronometer.stop();
         long timeUsed = chronometer.getDrawingTime() - chronometer.getBase();
-        title += '\n' + timeUsed;
-
+        timeUsed /= 1000;
+        String content = "用时：" + timeUsed + "秒";
 
         builder.setTitle(title);
-        builder.setPositiveButton("确认",
-                (dialog, which) -> promptAndExit()
-        );
-        builder.setNegativeButton("查看结果",
-                (dialog, which) -> activity.addExitButton()
-        );
+        builder.setMessage(content);
+
+        builder.setPositiveButton("确认", (dialog, which) -> {
+            EntranceRecorder.getInstance().onExitRequest();
+        });
+        builder.setNegativeButton("查看结果", (dialog, which) -> {
+        });
 
         return builder.create();
     }
 
-    void promptAndExit() {
+    static void promptAndExit(AppCompatActivity activity) {
         Toast.makeText(activity, "下次扫雷再见！", Toast.LENGTH_SHORT).show();
         System.exit(0);
     }

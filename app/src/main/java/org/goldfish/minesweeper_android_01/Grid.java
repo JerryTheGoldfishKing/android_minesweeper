@@ -14,6 +14,11 @@ import androidx.core.content.ContextCompat;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * {@code Grid} 游戏的基本单位 <br/>
+ * 用于表示游戏中的一个格子
+ *
+ */
 public class Grid extends AppCompatImageButton {
     //info for controller only
     private final int row;
@@ -85,19 +90,21 @@ public class Grid extends AppCompatImageButton {
         return col;
     }
 
-    public void open() {
+    public void open() throws MineTriggeredException {
         open(false);
     }
 
-    public void open(boolean reveal) {
+    public void open(boolean reveal) throws MineTriggeredException {
         if (state == STATE.FLAG) {
             return;
         }
         do {
-            if (!isMine()) break;
+            if (!isMine()) {
+                activity.getController().addFinished(this);
+                break;
+            }
             if (reveal) break;
-            activity.getController().Lose();
-            return;
+            throw new MineTriggeredException("Mine triggered.");
         } while (false);
 
         Log.d("open", toString());
@@ -107,7 +114,8 @@ public class Grid extends AppCompatImageButton {
     }
 
     public boolean flag() {
-        if (state == STATE.OPEN) return false;
+        if (state == STATE.OPEN)
+            return false;
         switch (state) {
             case FLAG:
                 this.state = STATE.CLOSE;
@@ -203,11 +211,16 @@ public class Grid extends AppCompatImageButton {
         CLOSE, FLAG, OPEN
     }
 
+
     private class ClickListener implements OnClickListener {
         @Override
         public void onClick(View v) {
-            activity.getController().open(Grid.this, state == STATE.OPEN);
-            activity.getController().updateState();
+            try {
+                activity.getController().open(Grid.this, state == STATE.OPEN);
+                activity.getController().updateState();
+            }catch (MineTriggeredException e){
+                activity.getController().Lose();
+            }
         }
     }
 }

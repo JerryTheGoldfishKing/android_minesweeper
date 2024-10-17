@@ -5,21 +5,24 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.GridLayout;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.AppCompatButton;
 
 import java.util.Locale;
 
-public class GameActivity extends AppCompatActivity {
+public class GameActivity extends AppCompatActivity implements Resources{
 
     private Controller controller;
 
+    private Mode mode;
 
     private TextView minePrompt;
+    private Button exitButton;
+    private Button restartButton;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +31,10 @@ public class GameActivity extends AppCompatActivity {
         setContentView(R.layout.activity_game);
 
         Intent intent = getIntent();
+        GridLayout layout;
+        if(intent instanceof Mode) {
+            mode = (Mode) intent;
+        }
         int height = intent.getIntExtra("height", 10);
         int width = intent.getIntExtra("width", 10);
         int mines = intent.getIntExtra("mines", 10);
@@ -37,41 +44,37 @@ public class GameActivity extends AppCompatActivity {
         controller.setActivity(this);
 
         Toast.makeText(this, String.format(Locale.CHINA, "模式: %s 高度: %d, 宽度: %d, 雷数: %d", difficulty_description, height, width, mines), Toast.LENGTH_SHORT).show();
+        try {
+            TextView titleTextView = findViewById(R.id.game_title);
+            titleTextView.setText(difficulty_description);
 
-        TextView titleTextView = findViewById(R.id.game_title);
-        if (titleTextView == null) {
-            Toast.makeText(this, "标题显示失败", Toast.LENGTH_SHORT).show();
-            System.exit(0);
+            Chronometer chronometer = findViewById(R.id.goldfish_chronometer);
+            chronometer.setBase(0);
+            controller.setChronometer(chronometer);
+
+            minePrompt = findViewById(R.id.mine_counter);
+            minePrompt.setText(String.valueOf(mines));
+
+            layout = findViewById(R.id.grids_field);
+            layout.setColumnCount(width);
+            layout.setRowCount(height);
+
+            exitButton = findViewById(R.id.exit_button);
+            exitButton.setOnClickListener(v->{
+                EntranceRecorder.getInstance(this).onExitRequest();
+            });
+            restartButton = findViewById(R.id.restart_button);
+            restartButton.setOnClickListener(v->{
+                startActivity(new Intent(this, EntranceActivity.class));
+            });
+
+
+
+        } catch (NullPointerException nullPointerException) {
+            Toast.makeText(this, nullPointerException.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "有组件无法定位", Toast.LENGTH_SHORT).show();
             return;
         }
-        titleTextView.setText(difficulty_description);
-
-        Chronometer chronometer = findViewById(R.id.goldfish_chronometer);
-        if (chronometer == null) {
-            Toast.makeText(this, "计时器定位失败", Toast.LENGTH_SHORT).show();
-            System.exit(0);
-            return;
-        }
-        chronometer.setBase(0);
-        controller.setChronometer(chronometer);
-
-        minePrompt = findViewById(R.id.mine_counter);
-        if (minePrompt == null) {
-            Toast.makeText(this, "扫雷计数器定位失败", Toast.LENGTH_SHORT).show();
-            System.exit(0);
-            return;
-        }
-        minePrompt.setText(String.valueOf(mines));
-
-        GridLayout layout = findViewById(R.id.grids_field);
-        if (layout == null) {
-            Toast.makeText(this, "雷区初始化定位失败", Toast.LENGTH_SHORT).show();
-            System.exit(0);
-            return;
-        }
-        layout.setColumnCount(width);
-        layout.setRowCount(height);
-
         for (int num = 0; num < width * height; num++) {
             Grid button = new Grid(this, num / width, num % width);
             controller.add(button);
@@ -80,35 +83,30 @@ public class GameActivity extends AppCompatActivity {
         controller.findSurroundings();
     }
 
-    void addExitButton() {
-        LinearLayout layout = findViewById(R.id.main_layout);
-        AppCompatButton
-                exitButton = new AppCompatButton(this),
-                restartButton = new AppCompatButton(this);
-        if (layout == null) {
-            Toast.makeText(this,
-                    "无法创建退出按钮",
-                    Toast.LENGTH_SHORT).show();
-            return;
-        }
-
+    void addExitButton(boolean finished) {
         exitButton.setOnClickListener(
-                v -> controller.promptAndExit()
+                v -> EntranceRecorder.getInstance(this).onExitRequest()
         );
         restartButton.setOnClickListener(
-                v -> startActivity(new Intent(this,EntranceActivity.class))
+                v -> {
+                    startActivity(new Intent(this, EntranceActivity.class));
+                }
         );
-
-        layout.addView(exitButton);
-        layout.addView(restartButton);
     }
 
     Controller getController() {
         return controller;
     }
+
     public TextView getMinePrompt() {
         return minePrompt;
     }
 
+    public Button getExitButton() {
+        return exitButton;
+    }
 
+    public Button getRestartButton() {
+        return restartButton;
+    }
 }

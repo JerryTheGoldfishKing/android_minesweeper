@@ -22,6 +22,7 @@ class ModeSelectListener  implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
+
         //提示框初始化
         builder.setTitle("确认你的难度");
         Intent intent = new Intent(activity, GameActivity.class);
@@ -33,10 +34,7 @@ class ModeSelectListener  implements View.OnClickListener {
 
         //提示框反应
         builder.setPositiveButton("确认",(dialog,which)-> activity.startActivity(intent));
-        builder.setNegativeButton("取消",((dialog, which) -> {
-            Toast.makeText(activity, "下次扫雷再见", Toast.LENGTH_SHORT).show();
-            System.exit(0);
-        }));
+        builder.setNegativeButton("取消",((dialog, which) -> EntranceRecorder.getInstance(activity).onExitRequest()));
 
         //提示框生效
         builder.create().show();

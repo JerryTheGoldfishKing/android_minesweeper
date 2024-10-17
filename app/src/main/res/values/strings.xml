@@ -1,14 +1,22 @@
 <resources>
     <string name="app_name">安卓版扫雷0.1</string>
     <string name="game_title">扫雷</string>
-    <string name="default_game_title">自定义难度</string>
+
+    <string name="AMAP_api_key">f668799d25e3f1cfcfa7d4c79351e7de</string>
+
+
     <string name="easy_mode_button_label">简单</string>
     <string name="medium_mode_button_label">中等</string>
     <string name="hard_mode_button_label">困难</string>
+    <string name="custom_mode_button_label">自选</string>
+    <string name="record_button_label">记录</string>
+
+    <string name="default_game_title">自定义难度</string>
+
     <string name="time_prompt">已用时间</string>
     <string name="mine_prompt">剩余雷数</string>
     <string name="timer_start">0</string>
-
-
+    <string name="exit_button_label">退出</string>
+    <string name="restart_button_label">重开</string>
 
 </resources>
