@@ -433,7 +433,7 @@ public class Controller {
         builder.setMessage(content);
 
         builder.setPositiveButton("确认", (dialog, which) -> {
-            EntranceRecorder.getInstance().onExitRequest();
+            promptAndExit(activity);
         });
         builder.setNegativeButton("查看结果", (dialog, which) -> {
         });

@@ -61,7 +61,7 @@ public class GameActivity extends AppCompatActivity implements Resources{
 
             exitButton = findViewById(R.id.exit_button);
             exitButton.setOnClickListener(v->{
-                EntranceRecorder.getInstance(this).onExitRequest();
+                Controller.promptAndExit(this);
             });
             restartButton = findViewById(R.id.restart_button);
             restartButton.setOnClickListener(v->{
@@ -85,7 +85,7 @@ public class GameActivity extends AppCompatActivity implements Resources{
 
     void addExitButton(boolean finished) {
         exitButton.setOnClickListener(
-                v -> EntranceRecorder.getInstance(this).onExitRequest()
+                v -> Controller.promptAndExit(this)
         );
         restartButton.setOnClickListener(
                 v -> {

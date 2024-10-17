@@ -34,7 +34,7 @@ class ModeSelectListener  implements View.OnClickListener {
 
         //提示框反应
         builder.setPositiveButton("确认",(dialog,which)-> activity.startActivity(intent));
-        builder.setNegativeButton("取消",((dialog, which) -> EntranceRecorder.getInstance(activity).onExitRequest()));
+        builder.setNegativeButton("取消",((dialog, which) -> Controller.promptAndExit(activity)));
 
         //提示框生效
         builder.create().show();

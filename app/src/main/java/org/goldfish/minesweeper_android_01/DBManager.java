@@ -8,18 +8,13 @@ import androidx.annotation.Nullable;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.sql.Timestamp;
-import java.util.Locale;
-
 
 public class DBManager extends SQLiteOpenHelper {
 	final static int DB_VERSION = 1;
 
 	private static DBManager manager = null;
-	final String ENTER_AND_EXIT_TABLE_NAME = "enter_and_exit";
 	final String GAME_INFO_TABLE_NAME = "game_info";
 	String tableName;
-	private SQLiteDatabase database;
 
 	private DBManager(@Nullable Context context, @Nullable String DBName, @NotNull String tableName) {
 		super(context, DBName, null, DB_VERSION);
@@ -33,18 +28,6 @@ public class DBManager extends SQLiteOpenHelper {
 	public static DBManager getInstance(@Nullable Context context, @Nullable String name, @NotNull String tableName) {
 		if (manager == null) manager = new DBManager(context, name, tableName);
 		return manager;
-	}
-
-	public void onExitWrite(Timestamp start, Timestamp end, Double latitude, Double longitude) {
-		Object[] bindArgs = {start, end, latitude, longitude};
-		String sql = String.format(Locale.CHINA, "INSERT INTO %s (start, end, latitude, longitude) VALUES (?, ?, ?, ?)", tableName);
-		database.execSQL(sql, bindArgs);
-	}
-
-	public void onGameEndWrite(MineSweeperGameInfo gameInfo) {
-		Object[] bindArgs= {gameInfo.getHeight(), gameInfo.getWidth(), gameInfo.getMineCount(), gameInfo.getDifficultyDescription(), gameInfo.getWinner(), EntranceRecorder.getInstance().latitude, EntranceRecorder.getInstance().longtitude, EntranceRecorder.getInstance().start, new Timestamp(System.currentTimeMillis())};
-		String sql = String.format(Locale.CHINA, "INSERT INTO %s (height, width, mines, difficulty_description, winner, latitude, longitude, start, end_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", GAME_INFO_TABLE_NAME);
-		database.execSQL(sql, bindArgs);
 	}
 
 	@Override
