@@ -12,8 +12,6 @@ import java.sql.Timestamp;
  * {@code getTime()}返回游戏时间<br/>
  * {@code getDifficultyDescription()}返回游戏的难度描述<br/>
  * {@code getWinner()}返回获胜者<br/>
- * {@code getLongtitude()}返回记录的经度<br/>
- * {@code getLatitude()}返回记录的纬度<br/>
  *
  *
  */
@@ -22,5 +20,5 @@ public interface MineSweeperGameInfo {
     int getWidth();
     int getMineCount();
     String getDifficultyDescription();
-    String getWinner();
+    long getTime();
 }

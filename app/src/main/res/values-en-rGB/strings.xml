@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MineSweeper 0.1</string>
+    <string name="game_title">MineSweeper</string>
+    
+    <string name="AMAP_api_key" translatable="false">f668799d25e3f1cfcfa7d4c79351e7de</string>
+    <string name="the_game_icon">The Game Icon</string>
+     
+    <string name="easy_mode_button_label">Easy</string>
+     
+    <string name="medium_mode_button_label">Medium</string>
+     
+    <string name="hard_mode_button_label">Hard</string>
+     
+    <string name="custom_mode_button_label">Custom</string>
+     
+    <string name="record_button_label">Record</string>
+     
+    <string name="default_game_title">Default Game Title</string>
+     
+    <string name="time_prompt">Time Prompt</string>
+     
+    <string name="mine_prompt">Mine Prompt</string>
+     
+    <string name="timer_start">Timer Start</string>
+     
+    <string name="exit_button_label">Exit</string>
+     
+    <string name="restart_button_label">Restart</string>
+     
+    <string name="button_return_label">Return</string>
+     
+    <string name="records_mine">Records Mine</string>
+     
+    <string name="records_time">Records Time</string>
+     
+    <string name="records_fields_size">Records Field Size</string>
+     
+    <string name="difficulty">Difficulty</string>
+     
+    <string name="privacy_collection">Privacy Collection</string>
+     
+    <string name="enter_time">Enter Time</string>
+     
+    <string name="exit_time">Exit Time</string>
+     
+    <string name="coordinate">Coordinate</string>
+</resources>

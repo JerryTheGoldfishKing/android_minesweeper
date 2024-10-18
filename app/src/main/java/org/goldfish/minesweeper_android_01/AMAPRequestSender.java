@@ -2,143 +2,127 @@ package org.goldfish.minesweeper_android_01;
 
 import static org.goldfish.minesweeper_android_01.Controller.thrower;
 
-import android.content.Context;
 import android.util.Log;
 
+import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
+import com.amap.api.location.AMapLocationListener;
 
 /**
  * {@code AMAPRequestSender}单例模式 <br/>
  * 用于发送高德地图定位请求
  */
 public class AMAPRequestSender {
-    /**
-     * 单例模式
-     */
-    private static AMAPRequestSender instance = null;
-    /**
-     * 高德地图定位客户端
-     */
-    private AMapLocationClient locationClient = null;
-    /**
-     * 上一次请求得到的经纬度
-     */
-    private Double latitude = null;
-    private Double longitude = null;
-    /**
-     * @param context
-     * @throws RuntimeException
-     * @see AMAPRequestSender#getInstance(EntranceActivity)
-     *
-     */
+	/**
+	 * 单例模式
+	 */
+	private static AMAPRequestSender instance = null;
+	/**
+	 * 高德地图定位客户端
+	 */
+	private AMapLocationClient locationClient = null;
+	private final EntranceActivity activity;
 
-    private AMAPRequestSender(EntranceActivity context) throws RuntimeException {
-        try {
-            AMapLocationClient.updatePrivacyAgree(context, true);
-            AMapLocationClient.updatePrivacyShow(context, true, true);
+	/**
+	 * @param context {@code EntranceActivity}实例
+	 */
 
-            locationClient = new AMapLocationClient(context);
-            AMapLocationClientOption locationOption = new AMapLocationClientOption();
-            locationOption.setOnceLocationLatest(true);
-            locationOption.setBeidouFirst(true);
-            locationClient.setLocationOption(locationOption);
-            locationClient.setLocationListener(location -> {
-                /**
-                 * 如果定位失败，抛出异常
-                 */
-                if (location == null) {
-                    throw new NullPointerException();
-                }
-                /**
-                 * 获取经纬度
-                 */
-                EntranceRecorder.getInstance().updateLocation(location.getLatitude(), location.getLongitude());
-                /**
-                 *
-                 */
-                context.setLocation();
-                /**
-                 * 停止定位
-                 */
-                locationClient.stopLocation();
-            });
+	private AMAPRequestSender(EntranceActivity context) {
+		this.activity = context;
+		try {
+			AMapLocationClient.updatePrivacyAgree(context,
+				true);
+			AMapLocationClient.updatePrivacyShow(context,
+				true, true);
 
-        } catch (Exception e) {
-            String message = "AMAPRequestSender: " + e.getMessage();
-            Log.w(thrower, message, e);
-        }
-    }
+			locationClient =
+				new AMapLocationClient(context);
+			AMapLocationClientOption locationOption =
+				new AMapLocationClientOption();
+			locationOption.setOnceLocationLatest(true);
+			locationOption.setBeidouFirst(true);
+			locationClient.setLocationOption(locationOption);
+			locationClient.setLocationListener(new GFLocationListener());
+		} catch (Exception ignored) {
+		}
+	}
 
-    /**
-     * 单例模式
-     * 该重载方法用于构造单例
-     * @param context
-     * @return
-     */
+	/**
+	 * 单例模式
+	 * 该重载方法用于构造单例
+	 *
+	 * @param context {@code EntranceActivity}实例
+	 * @return {@code AMAPRequestSender}实例
+	 */
 
-    public static AMAPRequestSender getInstance(EntranceActivity context) {
-        if (instance == null) try {
-            instance = new AMAPRequestSender(context);
-        } catch (Exception e) {
-            String message = "AMAPRequestSender: cannot create instance";
-            Log.w(thrower, message);
-        }
-        return (instance);
-    }
+	public static AMAPRequestSender getInstance(EntranceActivity context) {
+		if (instance == null) try {
+			instance = new AMAPRequestSender(context);
+		} catch (Exception e) {
+			String message = "AMAPRequestSender: " +
+				"cannot " + "create " + "instance";
+			Log.w(thrower, message);
+		}
+		return (instance);
+	}
 
-    /**
-     * 单例模式
-     * 该重载方法用于获取单例
-     * @return
-     */
+	/**
+	 * 单例模式
+	 * 该重载方法用于获取单例
+	 *
+	 * @return {@code AMAPRequestSender}实例
+	 * @throws NullPointerException 如果单例未创建
+	 */
 
-    public static AMAPRequestSender getInstance() {
-        if (instance == null) {
-            String message = "AMAPRequestSender: instance not created";
-            Log.w(thrower, message);
-            throw new NullPointerException(message);
-        }
-        return instance;
-    }
-    /**
-     * 开始定位
-     */
+	public static AMAPRequestSender getInstance() {
+		if (instance == null) {
+			String message = "AMAPRequestSender: " +
+				"instance " + "not created";
+			Log.w(thrower, message);
+			throw new NullPointerException(message);
+		}
+		return instance;
+	}
 
-    public void requestLocation() {
-        try {
-            locationClient.startLocation();
-        } catch (Exception e) {
-            String message = "AMAPRequestSender: " + e.getMessage();
-            Log.w(thrower, message, e);
-        }
-    }
-    /**
-     * 获取经度 并清空缓存
-     * @return 经度
-     *
-     */
+	/**
+	 * 开始定位
+	 */
 
-    public Double getLatitude() {
-        try {
-            return latitude;
-        } finally {
-            latitude = null;
-            longitude=null;
-        }
-    }
-    /**
-     * 获取纬度 并清空缓存
-     * @return 纬度
-     *
-     */
+	public void requestLocation() {
+		try {
+			locationClient.startLocation();
+		} catch (Exception e) {
+			String message =
+				"AMAPRequestSender: " + e.getMessage();
+			Log.w(thrower, message, e);
+		}
+	}
 
-    public Double getLongitude() {
-        try {
-            return longitude;
-        } finally {
-            latitude = null;
-            longitude = null;
-        }
-    }
+	private class GFLocationListener implements AMapLocationListener {
+
+		@Override
+		public void onLocationChanged(AMapLocation location) {
+			if (location == null) {
+				Log.w(thrower, "onLocationChanged: " +
+					"null");
+				return;
+			}
+			if (location.getErrorCode() != 0) {
+				Log.w(thrower, "onLocationChanged: " +
+					"error");
+				return;
+			}
+			try {
+				EntranceRecorder.getInstance().updateLocation(location);
+				activity.updateListeners();
+				locationClient.stopLocation();
+			} catch (Exception e) {
+				Log.w(thrower, "onLocationChanged: " +
+					"error", e);
+			}
+		}
+	}
 }
+
+

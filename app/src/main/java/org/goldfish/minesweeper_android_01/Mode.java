@@ -38,15 +38,14 @@ public class Mode extends Intent implements MineSweeperGameInfo {
         return mines;
     }
 
-
     @Override
     public String getDifficultyDescription() {
         return difficulty_description;
     }
 
     @Override
-    public String getWinner() {
-        throw new UnsupportedOperationException("Winner unavailable in mode selecting stage");
+    public long getTime() {
+        throw new UnsupportedOperationException("游戏尚未开始 无法获取游戏时间");
     }
 }
 

@@ -6,13 +6,18 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".PrivacyCollectionActivity">
-
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    >
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         app:layout_constrainedWidth="true"
         app:layout_constraintBaseline_toBaselineOf="parent"
+        android:id="@+id/privacy_activity_title_layout"
         >
 
         <TextView
@@ -20,21 +25,84 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/privacy_collection"
+            android:textAlignment="center"
             android:textSize="40sp"
             />
     </LinearLayout>
-    <TableLayout
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constrainedWidth="true"
-        app:layout_constraintBaseline_toBaselineOf="parent"
+        app:layout_constrainedHeight="true"
+        app:layout_constraintBaseline_toBottomOf="@+id/privacy_activity_title_layout"
         >
-        <TableRow
+        <HorizontalScrollView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             >
+            <TableLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constrainedHeight="true"
+                app:layout_constrainedWidth="true"
+                android:id="@+id/privacy_record_table"
+                >
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/table_row_bg"
 
+                    >
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/enter_time"
+                        android:background="@drawable/table_cell_bg"
+                        android:textSize="30sp"
+                        />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/exit_time"
+                        android:background="@drawable/table_cell_bg"
+                        android:textSize="30sp"
+                        />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/coordinate"
+                        android:background="@drawable/table_cell_bg"
+                        android:textSize="30sp"
+                        />
+                </TableRow>
 
+            </TableLayout>
+        </HorizontalScrollView>
+    </ScrollView>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
 
-        </TableRow>
+        >
 
-    </TableLayout>
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/button_return_label"
+            android:textSize="30sp"
+            android:id="@+id/entry_privacy_record_return_button"
+            />
+
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+    </LinearLayout>
+
+</LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

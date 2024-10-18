@@ -31,7 +31,7 @@ public class Grid extends AppCompatImageButton {
     private STATE state;
     private boolean mine;
     private int surroundingMines;
-
+    private final int SIZE=100;
 
     public Grid(GameActivity activity, int row, int col) {
         super(activity);
@@ -44,7 +44,7 @@ public class Grid extends AppCompatImageButton {
         this.surroundingMines = 0;
         this.activity = activity;
         this.surroundingMinesResourceIDs = Resources.drawables;
-        GridLayout.LayoutParams params = new GridLayout.LayoutParams(new ViewGroup.LayoutParams(50, 50));
+        GridLayout.LayoutParams params = new GridLayout.LayoutParams(new ViewGroup.LayoutParams(SIZE, SIZE));
         params.setMargins(2, 2, 2, 2);
         setLayoutParams(params);
         setPadding(0, 0, 0, 0);
@@ -104,7 +104,7 @@ public class Grid extends AppCompatImageButton {
                 break;
             }
             if (reveal) break;
-            throw new MineTriggeredException("Mine triggered.");
+            throw new MineTriggeredException("Mine triggered.", col, row);
         } while (false);
 
         Log.d("open", toString());
@@ -157,14 +157,6 @@ public class Grid extends AppCompatImageButton {
         }
     }
 
-    public int countFlagSurrounding() {
-        int surroundingFlags = 0;
-        for (Grid n : neighbors) {
-            if (n.state == STATE.FLAG) surroundingFlags++;
-        }
-        return surroundingFlags;
-    }
-
     public int getSurroundingMines() {
         return surroundingMines;
     }
@@ -194,7 +186,7 @@ public class Grid extends AppCompatImageButton {
         Log.v("Grid::updateState", "Setting image resource to ImageButton.");
         setBackgroundColor(Color.TRANSPARENT);
         setVisibility(VISIBLE);
-        ViewGroup.LayoutParams viewParams = new ViewGroup.LayoutParams(50, 50);
+        ViewGroup.LayoutParams viewParams = new ViewGroup.LayoutParams(SIZE, SIZE);
         GridLayout.LayoutParams params = new GridLayout.LayoutParams(viewParams);
         params.setMargins(0, 0, 0, 0);
         setLayoutParams(params);

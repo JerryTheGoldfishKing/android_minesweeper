@@ -1,5 +1,6 @@
 package org.goldfish.minesweeper_android_01;
 
+import android.content.Intent;
 import android.os.SystemClock;
 import android.util.Log;
 import android.widget.Chronometer;
@@ -12,7 +13,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 
@@ -23,427 +23,479 @@ import java.util.Set;
  */
 
 public class Controller {
-    public static String thrower = "GOLDFISH_CAUGHT";
+	public static String thrower = "GOLDFISH_CAUGHT";
 
-    private final int height, width, mines;
-    Grid[][] grids;
-    Set<Grid> finishedGrids;
-    GameActivity activity;
-    Chronometer chronometer;
-    private int used;
-    private boolean finished;
+	private final int height, width, mines;
+	private final String difficulty_description;
+	Grid[][] grids;
+	Set<Grid> finishedGrids;
+	GameActivity activity;
+	Chronometer chronometer;
+	private int used;
+	private boolean finished;
 
-    /**
-     * 构造函数
-     * @param height 雷区的高度
-     * @param width 雷区的宽度
-     * @param mines 雷区的雷数
-     */
+	/**
+	 * 构造函数
+	 *
+	 * @param height 雷区的高度
+	 * @param width  雷区的宽度
+	 * @param mines  雷区的雷数
+	 */
 
-    public Controller(int height, int width, int mines) {
-        this.height = height;
-        this.width = width;
-        this.used = 0;
-        this.mines = mines;
-        this.grids = new Grid[height][width];
-        this.finished = false;
-    }
+	public Controller(int height, int width, int mines,
+	                  String difficulty_description) {
+		this.height = height;
+		this.width = width;
+		this.difficulty_description =
+			difficulty_description;
+		this.mines = mines;
 
-    public boolean isFinished() {
-        return finished=(finishedGrids.size()+mines==height*width);
-    }
+		this.used = 0;
+		this.grids = new Grid[height][width];
+		this.finished = false;
+	}
 
-    /**
-     * 设置游戏主窗口
-     * @param activity 指定的窗口
-     */
-    public void setActivity(GameActivity activity) {
-        this.activity = activity;
-    }
-    /**
-     * 添加格子
-     * @param grid 要添加的格子
-     */
+	static void promptAndExit(AppCompatActivity activity) {
+		Toast.makeText(activity, "下次扫雷再见！",
+			Toast.LENGTH_SHORT).show();
+		try {
+			EntranceRecorder.getInstance().onExitRecord();
+		} catch (Exception exception) {
+			Log.w("Controller:promptAndExit",
+				"EntranceRecorder.onExitRecord:",
+				new Exception(thrower, exception));
+		}
+		activity.finish();
+	}
 
-    public void add(Grid grid) {
-        if (used >= height * width) throw new RuntimeException("Array Already Full");
-        grids[used / width][used % width] = grid;
-        used++;
-    }
+	public boolean isFinished() {
+		return finished =
+			(finishedGrids.size() + mines == height * width);
+	}
 
-    /**
-     * 寻找周围格子
-     */
+	/**
+	 * 设置游戏主窗口
+	 *
+	 * @param activity 指定的窗口
+	 */
+	public void setActivity(GameActivity activity) {
+		this.activity = activity;
+	}
 
-    public void findSurroundings() {
-        if (used < width * height) throw new RuntimeException("Array Not Full");
-        for (int row = 0; row < height; row++) {
-            for (int col = 0; col < width; col++) {
-                Grid grid = grids[row][col];
-                //在九宫格范围内寻找相邻格
-                for (int d_row = -1; d_row <= 1; d_row++) {
-                    for (int d_col = -1; d_col <= 1; d_col++) {
-                        if (d_row == 0 && d_col == 0) continue;
-                        //起点格坐标
+	/**
+	 * 添加格子
+	 *
+	 * @param grid 要添加的格子
+	 */
 
-                        int neighbor_candidate_row = row + d_row;
-                        int neighbor_candidate_col = col + d_col;
-                        //候选坐标生成
+	public void add(Grid grid) {
+		if (used >= height * width)
+			throw new RuntimeException("Array Already " +
+				"Full");
+		grids[used / width][used % width] = grid;
+		used++;
+	}
 
-                        if (neighbor_candidate_row < 0) continue;//超上界
-                        if (neighbor_candidate_row >= height) continue;//超下界
-                        if (neighbor_candidate_col < 0) continue;//超左界
-                        if (neighbor_candidate_col >= width) continue;//超右界
+	/**
+	 * 寻找周围格子
+	 */
 
-                        Grid gridCandidate = grids[neighbor_candidate_row][neighbor_candidate_col];
-                        if (gridCandidate == null) {
-                            String messageBuf = "(" + neighbor_candidate_row + "," + neighbor_candidate_col + ')';
-                            Log.w("GOLDFISH_SELF_CAUGHT", messageBuf);
-                            return;
-                        }
+	public void findSurroundings() {
+		if (used < width * height)
+			throw new RuntimeException("Array Not " +
+				"Full");
+		for (int row = 0; row < height; row++) {
+			for (int col = 0; col < width; col++) {
+				Grid grid = grids[row][col];
+				//在九宫格范围内寻找相邻格
+				for (int d_row = -1; d_row <= 1; d_row++) {
+					for (int d_col = -1; d_col <= 1; d_col++) {
+						if (d_row == 0 && d_col == 0)
+							continue;
+						//起点格坐标
 
-                        if (grid.addNeighbor(gridCandidate)) continue;
+						int neighbor_candidate_row =
+							row + d_row;
+						int neighbor_candidate_col =
+							col + d_col;
+						//候选坐标生成
 
-                        //添加邻居不成功 则执行以下处理
-                        if (activity == null)
-                            throw new NullPointerException("Call SetActivity first");
-                        Toast.makeText(activity, "邻接错误", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                }
-            }
-        }
-    }
+						if (neighbor_candidate_row < 0)
+							continue;//超上界
+						if (neighbor_candidate_row >= height)
+							continue;//超下界
+						if (neighbor_candidate_col < 0)
+							continue;//超左界
+						if (neighbor_candidate_col >= width)
+							continue;//超右界
 
-    /**
-     * 获取格子
-     * @param index 格子的索引 <br/>
-     *              从左上角开始 从左到右 从上到下 比如<br/>
-     *              0 1 2 3 4 5 6 7 8<br/>
-     *              9 10 11 12 13 14 15 16 17<br/>
-     * @return 格子
-     */
-    public Grid getGrid(int index) {
-        return getGrid(index / width, index % width);
-    }
+						Grid gridCandidate =
+							grids[neighbor_candidate_row][neighbor_candidate_col];
+						if (gridCandidate == null) {
+							String messageBuf =
+								"(" + neighbor_candidate_row + "," + neighbor_candidate_col + ')';
+							Log.w("GOLDFISH_SELF_CAUGHT",
+								messageBuf);
+							return;
+						}
 
-    /**
-     *
-     * @param row 格子的行号
-     * @param col 格子的列号
-     * @return 格子的对象
-     */
+						if (grid.addNeighbor(gridCandidate))
+							continue;
 
-    public Grid getGrid(int row, int col) {
-        try {
-            return grids[row][col];
-        } catch (RuntimeException e) {
-            return null;
-        }
-    }
+						//添加邻居不成功 则执行以下处理
+						if (activity == null)
+							throw new NullPointerException("Call SetActivity " + "first");
+						Toast.makeText(activity, "邻接错误",
+							Toast.LENGTH_SHORT).show();
+						return;
+					}
+				}
+			}
+		}
+	}
 
-    /**
-     * 获取计时器
-     * @return 计时器
-     */
+	/**
+	 * 获取格子
+	 *
+	 * @param index 格子的索引 <br/>
+	 *              从左上角开始 从左到右 从上到下 比如<br/>
+	 *              0 1 2 3 4 5 6 7 8<br/>
+	 *              9 10 11 12 13 14 15 16 17<br/>
+	 * @return 格子
+	 */
+	public Grid getGrid(int index) {
+		return getGrid(index / width, index % width);
+	}
 
-    public Chronometer getChronometer() {
-        return chronometer;
-    }
+	/**
+	 * @param row 格子的行号
+	 * @param col 格子的列号
+	 * @return 格子的对象
+	 */
 
-    /**
-     * 添加计时器
-     * @param chronometer 计时器
-     */
-    public void setChronometer(Chronometer chronometer) {
-        this.chronometer = chronometer;
-        if (chronometer == null) {
-            Log.w(thrower, "setChronometer: ", new NullPointerException());
-            return;
-        }
-        chronometer.setBase(SystemClock.elapsedRealtime());
-    }
+	public Grid getGrid(int row, int col) {
+		try {
+			return grids[row][col];
+		} catch (RuntimeException e) {
+			return null;
+		}
+	}
 
-    /**
-     * 生成雷 并开始游戏
-     * @param start 用户选中的格子 此格及周围不得为雷
-     */
+	/**
+	 * 添加计时器
+	 *
+	 * @param chronometer 计时器
+	 */
+	public void setChronometer(Chronometer chronometer) {
+		this.chronometer = chronometer;
+		if (chronometer == null) {
+			Log.w(thrower, "setChronometer: ",
+				new NullPointerException());
+			return;
+		}
+		chronometer.setBase(SystemClock.elapsedRealtime());
+	}
 
-    public void generateMine(Grid start) {
-        Log.i("Controller:generateMine", "generateMine: " + "<" + start.getRow() + '-' + start.getCol() + '>');
-        Set<Grid> invalidGrids = new LinkedHashSet<>();
-        invalidGrids.add(start);
-        invalidGrids.addAll(start.getNeighbors());
+	/**
+	 * 生成雷 并开始游戏
+	 *
+	 * @param start 用户选中的格子 此格及周围不得为雷
+	 */
 
-        finishedGrids = new LinkedHashSet<>();
-        finishedGrids.add(start);
-        finishedGrids.addAll(start.getNeighbors());
+	public void generateMine(Grid start) {
+		Log.i("Controller:generateMine",
+			"generateMine: " + "<" + start.getRow() + '-' + start.getCol() + '>');
+		Set<Grid> invalidGrids = new LinkedHashSet<>();
+		invalidGrids.add(start);
+		invalidGrids.addAll(start.getNeighbors());
 
-
-        for (int i = 0; i < mines; ) {
-            int h = (int) (Math.random() * height);
-            int w = (int) (Math.random() * width);
-            boolean exist = false;
-
-            for (Grid grid : invalidGrids) {
-                if (h == grid.getRow() && w == grid.getCol()) {
-                    exist = true;
-                    break;
-                }
-            }
-            if (exist) continue;
-
-            //loop exited because loc generated cannot be set mine
-            //so just try generating another one
-            Grid candidateMinedGrid = getGrid(h, w);
-            if (candidateMinedGrid == null) {
-                Log.w(Controller.thrower, "Controller:generateMine: " + h + ',' + w);
-                return;
-            }
-            if (candidateMinedGrid.setMine()) {
-                invalidGrids.add(candidateMinedGrid);
-                i++;
-            }
-        }
+		finishedGrids = new LinkedHashSet<>();
+		finishedGrids.add(start);
+		finishedGrids.addAll(start.getNeighbors());
 
 
-        for (int index = 0; index < width * height; index++) {
-            Log.v("Controller:generateMine", "UPDATE");
-            getGrid(index).countSurroundings();
-        }
+		for (int i = 0; i < mines; ) {
+			int h = (int) (Math.random() * height);
+			int w = (int) (Math.random() * width);
+			boolean exist = false;
 
-        try {
-            open(start);
-        }catch (MineTriggeredException e){
-            Log.w("Controller:generateMine", "MineTriggeredException");
-        }
-        for (int index = 0; index < width * height; index++) {
-            getGrid(index).updateState();
-            getGrid(index).prepared();
-        }
-        chronometer.setBase(SystemClock.elapsedRealtime());
-        chronometer.start();
+			for (Grid grid : invalidGrids) {
+				if (h == grid.getRow() && w == grid.getCol()) {
+					exist = true;
+					break;
+				}
+			}
+			if (exist) continue;
 
-    }
+			//loop exited because loc generated cannot be
+			// set mine
+			//so just try generating another one
+			Grid candidateMinedGrid = getGrid(h, w);
+			if (candidateMinedGrid == null) {
+				Log.w(Controller.thrower, "Controller" +
+					":generateMine: " + h + ',' + w);
+				return;
+			}
+			if (candidateMinedGrid.setMine()) {
+				invalidGrids.add(candidateMinedGrid);
+				i++;
+			}
+		}
 
-    /**
-     * 调试用 输出地雷分布
-     * @return
-     */
-    @NonNull
-    public String toString() {
-        StringBuilder buffer = new StringBuilder();
-        for (Grid[] row : grids) {
-            for (Grid grid : row)
-                buffer.append(grid).append(' ');
-            buffer.append('\n');
-        }
-        return buffer.toString();
-    }
 
-    /**
-     * 打开格子
-     * 默认游戏没有开始
-     * @param start 起始格子
-     * @throws MineTriggeredException 触雷
-     */
-    public void open(Grid start) throws MineTriggeredException {
-        open(start, false);
-    }
-    /**
-     * 打开格子
-     * @param started 是否已经开始游戏<br/>
-     *                如果已经开始游戏 则检查周围格子插旗数是否等于周围雷数<br/>
-     *                再决定是否打开周围格子<br/>
-     * @param start 起始格子<br/>
-     *              如果格子周围有雷数为0 则打开周围格子<br/>
-     *              如果格子已经打开 则检查周围格子插旗数是否等于周围雷数<br/>
-     *              如果格子周围插旗数不等于周围雷数 则提示<br/>
-     *              如果格子周围插旗数等于周围雷数 则打开周围格子<br/>
-     * @throws MineTriggeredException 触雷
-     */
+		for (int index = 0; index < width * height; index++) {
+			Log.v("Controller:generateMine", "UPDATE");
+			getGrid(index).countSurroundings();
+		}
 
-    public void open(Grid start, boolean started) throws MineTriggeredException{
-        Queue<Grid> queue = new LinkedList<>();
-        boolean[][] visited = new boolean[height][width];
-        if (finished) {
-            Toast.makeText(activity, "游戏已结束", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if (started) {
-            if (start.getState() == Grid.STATE.FLAG) return;
-            int flagCount = 0;
-	        for (Grid n : start.getNeighbors()) {
-                switch (n.getState()) {
-                    case FLAG:
-                        flagCount++;
-                    case OPEN:
-                        continue;
-                    default:
-                        break;
-                }
-                queue.add(n);
-            }
-            int remaining = start.getSurroundingMines() - flagCount;
-            String message;
-            if (remaining > 0) {
-                message = String.format(Locale.CHINA, "少插了%d个旗子", remaining);
-                Toast.makeText(activity, message, Toast.LENGTH_SHORT).show();
-                return;
-            }
-            if (remaining < 0) {
-                message = String.format(Locale.CHINA, "多插了%d个旗子", -remaining);
-                Toast.makeText(activity, message, Toast.LENGTH_SHORT).show();
-                return;
-            }
-        } else {
-            queue.add(start);
-        }
-        while (!queue.isEmpty()) {
-            Grid current = queue.poll();
-            if (current == null) {
-                Log.w("Controller:open", "Null stored in neighbor");
-                continue;
-            }
-            Log.i("Controller:open", "Locking mutex for grid: " + current);
-            current.open(); // Check if this leads to deadlocks or accesses destroyed objects
+		try {
+			open(start);
+		} catch (MineTriggeredException e) {
+			Log.w("Controller:generateMine",
+				"MineTriggeredException");
+		}
+		for (int index = 0; index < width * height; index++) {
+			getGrid(index).updateState();
+			getGrid(index).prepared();
+		}
+		chronometer.setBase(SystemClock.elapsedRealtime());
+		chronometer.start();
 
-            visited[current.getRow()][current.getCol()] = true;
-            if (current.getSurroundingMines() != 0) continue;
+	}
 
-            for (Grid potentials : current.getNeighbors()) {
-                if (visited[potentials.getRow()][potentials.getCol()]) continue;
-                queue.add(potentials);
-            }
-            System.out.println(activity.getController());
-        }
-    }
+	/**
+	 * 调试用 输出地雷分布
+	 *
+	 * @return 地雷分布
+	 */
+	@NonNull
+	public String toString() {
+		StringBuilder buffer = new StringBuilder();
+		for (Grid[] row : grids) {
+			for (Grid grid : row)
+				buffer.append(grid).append(' ');
+			buffer.append('\n');
+		}
+		return buffer.toString();
+	}
 
-    /**
-     * 添加非雷且已经打开的格子
-     * @param grid 要添加的格子
-     */
+	/**
+	 * 打开格子
+	 * 默认游戏没有开始
+	 *
+	 * @param start 起始格子
+	 * @throws MineTriggeredException 触雷
+	 */
+	public void open(Grid start) throws MineTriggeredException {
+		open(start, false);
+	}
 
-    public void addFinished(@NonNull Grid grid) {
-        switch (grid.getState()) {
-            case FLAG:
-                if (!grid.isMine()) return;
-                break;
-            case OPEN:
-                if (grid.isMine()) return;
-                break;
-        }
-        finishedGrids.add(grid);
+	/**
+	 * 打开格子
+	 *
+	 * @param started 是否已经开始游戏<br/>
+	 *                如果已经开始游戏 则检查周围格子插旗数是否等于周围雷数<br/>
+	 *                再决定是否打开周围格子<br/>
+	 * @param start   起始格子<br/>
+	 *                如果格子周围有雷数为0 则打开周围格子<br/>
+	 *                如果格子已经打开 则检查周围格子插旗数是否等于周围雷数<br/>
+	 *                如果格子周围插旗数不等于周围雷数 则提示<br/>
+	 *                如果格子周围插旗数等于周围雷数 则打开周围格子<br/>
+	 * @throws MineTriggeredException 触雷
+	 */
+
+	public void open(Grid start, boolean started) throws MineTriggeredException {
+		Queue<Grid> queue = new LinkedList<>();
+		boolean[][] visited = new boolean[height][width];
+		if (finished) {
+			Toast.makeText(activity, "游戏已结束",
+				Toast.LENGTH_SHORT).show();
+			return;
+		}
+		if (started) {
+			if (start.getState() == Grid.STATE.FLAG) return;
+			int flagCount = 0;
+			for (Grid n : start.getNeighbors()) {
+				switch (n.getState()) {
+					case FLAG:
+						flagCount++;
+					case OPEN:
+						continue;
+					default:
+						break;
+				}
+				queue.add(n);
+			}
+			int remaining =
+				start.getSurroundingMines() - flagCount;
+			String message;
+			if (remaining > 0) {
+				message = String.format(Locale.CHINA,
+					"少插了%d个旗子", remaining);
+				Toast.makeText(activity, message,
+					Toast.LENGTH_SHORT).show();
+				return;
+			}
+			if (remaining < 0) {
+				message = String.format(Locale.CHINA,
+					"多插了%d个旗子", -remaining);
+				Toast.makeText(activity, message,
+					Toast.LENGTH_SHORT).show();
+				return;
+			}
+		} else {
+			queue.add(start);
+		}
+		while (!queue.isEmpty()) {
+			Grid current = queue.poll();
+			if (current == null) {
+				Log.w("Controller:open",
+					"Null stored in " + "neighbor");
+				continue;
+			}
+			current.open();
+
+			visited[current.getRow()][current.getCol()] =
+				true;
+			if (current.getSurroundingMines() != 0)
+				continue;
+
+			for (Grid potentials :
+				current.getNeighbors()) {
+				if (visited[potentials.getRow()][potentials.getCol()])
+					continue;
+				queue.add(potentials);
+			}
+			//在日志中输出雷区信息
+			System.out.println(activity.getController());
+		}
+		if (isFinished()) {
+			checkFinished();
+		}
+	}
+
+	/**
+	 * 添加非雷且已经打开的格子<br/>
+	 *
+	 * @param grid 要添加的格子
+	 */
+	public void addFinished(@NonNull Grid grid) {
+		switch (grid.getState()) {
+			case FLAG:
+				if (!grid.isMine()) return;
+				break;
+			case OPEN:
+				if (grid.isMine()) return;
+				break;
+		}
+		finishedGrids.add(grid);
 //        checkFinished();
-        updateProgress();
-    }
+		updateProgress();
+	}
 
-    /**
-     * 计算插旗数 给{@code updateProgress()}调用
-     *
-     * @return 插旗数
-     */
+	/**
+	 * 计算插旗数 给{@code updateProgress()}调用<br/>
+	 *
+	 * @return 插旗数
+	 */
+	public int countFlagTotal() {
+		int count = 0;
+		for (Grid[] row : grids) {
+			for (Grid g : row) {
+				if (g.getState() == Grid.STATE.FLAG)
+					count++;
+			}
+		}
+		return count;
+	}
 
-    public int countFlagTotal() {
-        int count = 0;
-        for (Grid[] row : grids) {
-            for (Grid g : row) {
-                if (g.getState() == Grid.STATE.FLAG) count++;
-            }
-        }
-        return count;
-    }
-    /**
-     * 数总共插旗数 给用户提示游戏进度
-     */
+	/**
+	 * 数总共插旗数 给用户提示游戏进度
+	 */
 
-    public void updateProgress() {
-        activity.getMinePrompt().setText(String.valueOf(mines - countFlagTotal()));
-    }
+	public void updateProgress() {
+		activity.getMinePrompt().setText(String.valueOf(mines - countFlagTotal()));
+	}
 
+	/**
+	 * 检查游戏是否结束
+	 */
+	private void checkFinished() {
+		this.finished = true;
+		getFinishDialog(true).show();
+	}
 
-    /**
-     * 检查游戏是否结束
-     */
-    private void checkFinished() {
-        for (Grid[] row : grids) {
-            for (Grid grid : row) {
-                if (Objects.requireNonNull(grid.getState()) == Grid.STATE.OPEN) {
-                    if (!grid.isMine()) continue;
-                    Lose();
-                    return;
-                } else {
-                    if (!grid.isMine()) return;
-                }
-            }
-        }
-        this.finished = true;
-        getFinishDialog(true).show();
-    }
+	/**
+	 * 输掉游戏
+	 */
+	void Lose() {
+		this.finished = true;
+		reveal();
+		getFinishDialog(false).show();
+	}
 
-    /**
-     * 输掉游戏
-     */
+	void updateState() {
+		for (Grid[] row : grids) {
+			for (Grid g : row)
+				g.updateState();
+		}
+	}
 
-    void Lose() {
-        this.finished = true;
-        reveal();
-        getFinishDialog(false).show();
-    }
+	/**
+	 * 显示所有格子 告诉用户输掉的原因
+	 */
 
-    void updateState() {
-        for (Grid[] row : grids) {
-            for (Grid g : row)
-                g.updateState();
-        }
-    }
-    /**
-     * 显示所有格子 告诉用户输掉的原因
-     */
+	void reveal() {
+		for (Grid[] row : grids) {
+			for (Grid g : row) {
+				try {
+					g.open(true);
+					g.updateState();
+				} catch (MineTriggeredException exception) {
+					Log.w("Controller:reveal",
+						"MineTriggeredException");
+				}
+			}
+		}
+	}
 
-    void reveal() {
-        for (Grid[] row : grids) {
-            for (Grid g : row) {
-                try {
-                    g.open(true);
-                    g.updateState();
-                } catch (MineTriggeredException exception) {
-                    Log.w("Controller:reveal", "MineTriggeredException");
-                }
-            }
-        }
-    }
+	/**
+	 * 构造一个游戏结束的对话框<br/>
+	 * 在构造时进行游戏结束的处理
+	 *
+	 * @param win 是否赢得游戏
+	 * @return 对话框
+	 */
 
-    AlertDialog getFinishDialog(boolean win) {
-        finished = true;
-        for (Grid[] row : grids) {
-            for (Grid g : row) {
-                g.setOnClickListener(null);
-                g.setOnLongClickListener(null);
-            }
-        }
-        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-        String title = win ? "您赢了" : "您输了";
-        chronometer.stop();
-        long timeUsed = chronometer.getDrawingTime() - chronometer.getBase();
-        timeUsed /= 1000;
-        String content = "用时：" + timeUsed + "秒";
+	AlertDialog getFinishDialog(boolean win) {
+		finished = true;
+		for (Grid[] row : grids) {
+			for (Grid g : row) {
+				g.setOnClickListener(null);
+				g.setOnLongClickListener(null);
+			}
+		}
+		AlertDialog.Builder builder =
+			new AlertDialog.Builder(activity);
+		String title = win ? "您赢了" : "您输了";
+		chronometer.stop();
+		long timeUsed =
+			SystemClock.elapsedRealtime() - chronometer.getBase();
+		timeUsed /= 1000;
+		String content = "用时：" + timeUsed + "秒";
 
-        builder.setTitle(title);
-        builder.setMessage(content);
+		if (win)
+			DBManager.getInstance().onWinWrite(new Result(difficulty_description, mines, width, height, timeUsed));
+		builder.setTitle(title);
+		if (win) builder.setMessage(content);
 
-        builder.setPositiveButton("确认", (dialog, which) -> {
-            EntranceRecorder.getInstance().onExitRequest();
-        });
-        builder.setNegativeButton("查看结果", (dialog, which) -> {
-        });
+		builder.setPositiveButton("确认",
+			(dialog, which) -> activity.startActivity(new Intent(activity, EntranceActivity.class)));
+		builder.setNegativeButton("查看结果",
+			(dialog, which) -> {
+		});
 
-        return builder.create();
-    }
-
-    static void promptAndExit(AppCompatActivity activity) {
-        Toast.makeText(activity, "下次扫雷再见！", Toast.LENGTH_SHORT).show();
-        System.exit(0);
-    }
+		return builder.create();
+	}
 }
 

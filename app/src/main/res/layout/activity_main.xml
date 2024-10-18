@@ -22,7 +22,7 @@
 
 
         <ImageView
-            android:id="@+id/game_icon"
+            android:id="@+id/imageView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:contentDescription="@string/the_game_icon"
@@ -33,7 +33,6 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/entrance_title_layout"
             android:orientation="vertical">
 
             <Space
@@ -47,7 +46,7 @@
                 android:text="@string/game_title"
                 android:textAlignment="center"
                 android:textSize="80sp"
-                app:layout_constraintStart_toStartOf="@id/game_icon" />
+                app:layout_constraintStart_toStartOf="@id/imageView" />
 
             <Space
                 android:layout_width="match_parent"
@@ -106,7 +105,7 @@
 
             <Space
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
                 android:minHeight="20sp"
                 android:layout_weight="1"/>
 
@@ -177,27 +176,24 @@
 
             </LinearLayout>
 
-        </LinearLayout>
 
+
+        </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="horizontal"
-            android:id="@+id/privacy_layout_manage">
-
-            <Button
-                android:id="@+id/privacy_activity_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/privacy_collection" />
-
+            android:orientation="vertical">
             <Space
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:minWidth="100sp"
-                />
+                android:gravity="bottom"
+                android:textSize="20sp"
+                android:id="@+id/privacy_collection_entrance"
+                android:text="@string/privacy_collection" />
         </LinearLayout>
 
 
