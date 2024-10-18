@@ -2,6 +2,7 @@ package org.goldfish.minesweeper_android_01;
 
 import static org.goldfish.minesweeper_android_01.Controller.thrower;
 
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -13,6 +14,7 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
@@ -21,7 +23,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 public class EntranceActivity extends AppCompatActivity implements Resources {
 
-    Button easyButton, mediumButton, hardButton, recordButton;
+    Button easyButton, mediumButton, hardButton, recordButton,privacyCollectionButton;
     SQLiteDatabase db;
 
     public EntranceActivity() {
@@ -40,11 +42,17 @@ public class EntranceActivity extends AppCompatActivity implements Resources {
         easyButton = findViewById(R.id.easy_mode_button);
         mediumButton = findViewById(R.id.medium_mode_button);
         hardButton = findViewById(R.id.hard_mode_button);
-        recordButton = findViewById(R.id.record_button);
+
         View.OnClickListener waitingListener= v -> Toast.makeText(this, "等待定位信息", Toast.LENGTH_SHORT).show();
         easyButton.setOnClickListener(waitingListener);
         mediumButton.setOnClickListener(waitingListener);
         hardButton.setOnClickListener(waitingListener);
+
+        recordButton = findViewById(R.id.record_button);
+
+        privacyCollectionButton=findViewById(R.id.privacy_activity_button);
+        privacyCollectionButton.setOnClickListener(waitingListener);
+
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -56,12 +64,18 @@ public class EntranceActivity extends AppCompatActivity implements Resources {
         db = DBManager.getInstance(this, null, "MINESWEEPER_RECORDS").getWritableDatabase();
         DBManager.getInstance().onUpgrade(db,0,0);
 
+
+
+
+
         var permission = android.Manifest.permission.ACCESS_FINE_LOCATION;
 
         if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
             Toast.makeText(this, "asking for permission...", Toast.LENGTH_SHORT).show();
             ActivityCompat.requestPermissions(this, new String[]{permission}, LOCATION_PERMISSION_REQUEST_CODE);
+            return;
         }
+        AMAPRequestSender.getInstance(this).requestLocation();
     }
 
     public void setLocation() {
@@ -69,6 +83,10 @@ public class EntranceActivity extends AppCompatActivity implements Resources {
         easyButton.setOnClickListener(new ModeSelectListener(this, Mode.EASY));
         mediumButton.setOnClickListener(new ModeSelectListener(this, Mode.MEDIUM));
         hardButton.setOnClickListener(new ModeSelectListener(this, Mode.HARD));
+
+        privacyCollectionButton.setOnClickListener(v -> {
+            startActivity(new Intent(this, PrivacyCollectionActivity.class));
+        });
 
     }
 

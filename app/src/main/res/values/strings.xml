@@ -4,6 +4,7 @@
 
     <string name="AMAP_api_key">f668799d25e3f1cfcfa7d4c79351e7de</string>
 
+    <string name="the_game_icon">游戏图标</string>
 
     <string name="easy_mode_button_label">简单</string>
     <string name="medium_mode_button_label">中等</string>
@@ -18,5 +19,7 @@
     <string name="timer_start">0</string>
     <string name="exit_button_label">退出</string>
     <string name="restart_button_label">重开</string>
+
+    <string name="privacy_collection">隐私清单</string>
 
 </resources>

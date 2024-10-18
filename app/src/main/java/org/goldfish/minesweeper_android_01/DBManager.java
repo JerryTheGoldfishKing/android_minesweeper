@@ -49,7 +49,7 @@ public class DBManager extends SQLiteOpenHelper {
 
 	@Override
 	public void onCreate(SQLiteDatabase db) {
-		String createEntryInfoSQL = "CREATE TABLE IF NOT EXISTS " + tableName + """
+		String createEntryInfoSQL = "CREATE TABLE IF NOT EXISTS " + ENTER_AND_EXIT_TABLE_NAME + """
 				(
 					id INTEGER PRIMARY KEY AUTOINCREMENT,
 					start TIMESTAMP,
@@ -79,8 +79,9 @@ public class DBManager extends SQLiteOpenHelper {
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-		String dropSQL = "DROP TABLE IF EXISTS " + tableName;
+		String dropSQL = "DROP TABLE IF EXISTS " + ENTER_AND_EXIT_TABLE_NAME+";";
 		db.execSQL(dropSQL);
+		db.execSQL("DROP TABLE IF EXISTS "+GAME_INFO_TABLE_NAME+';');
 		onCreate(db);
 	}
 

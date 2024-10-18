@@ -29,11 +29,11 @@ public class AMAPRequestSender {
     /**
      * @param context
      * @throws RuntimeException
-     * @see AMAPRequestSender#getInstance(Context)
+     * @see AMAPRequestSender#getInstance(EntranceActivity)
      *
      */
 
-    private AMAPRequestSender(Context context) throws RuntimeException {
+    private AMAPRequestSender(EntranceActivity context) throws RuntimeException {
         try {
             AMapLocationClient.updatePrivacyAgree(context, true);
             AMapLocationClient.updatePrivacyShow(context, true, true);
@@ -55,6 +55,10 @@ public class AMAPRequestSender {
                  */
                 EntranceRecorder.getInstance().updateLocation(location.getLatitude(), location.getLongitude());
                 /**
+                 *
+                 */
+                context.setLocation();
+                /**
                  * 停止定位
                  */
                 locationClient.stopLocation();
@@ -73,7 +77,7 @@ public class AMAPRequestSender {
      * @return
      */
 
-    public static AMAPRequestSender getInstance(Context context) {
+    public static AMAPRequestSender getInstance(EntranceActivity context) {
         if (instance == null) try {
             instance = new AMAPRequestSender(context);
         } catch (Exception e) {
