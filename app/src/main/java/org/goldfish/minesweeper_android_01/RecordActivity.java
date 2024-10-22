@@ -3,11 +3,9 @@ package org.goldfish.minesweeper_android_01;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.AttributeSet;
 import android.widget.Button;
 import android.widget.TableLayout;
 import android.widget.TableRow;
-import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,7 +17,7 @@ import java.util.List;
 
 public class RecordActivity extends AppCompatActivity {
 	final static float TEXT_SIZE=30;
-
+TableLayout tableLayout;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -31,21 +29,16 @@ public class RecordActivity extends AppCompatActivity {
 			return insets;
 		});
 		List<MineSweeperGameInfo> records = DBManager.getInstance().onRecordsGet();
-
-		TableLayout tableLayout = findViewById(R.id.record_table);
-		RecordView recordView = new RecordView(this,tableLayout,records);
+		tableLayout = findViewById(R.id.record_table);
+		RecordView recordView = new RecordView(this, records);
 
 		Button backButton = findViewById(R.id.recoord_return_button);
 		backButton.setOnClickListener(v->{
 			startActivity(new Intent(this, EntranceActivity.class));
 		});
-
-
 	}
 	class RecordView{
-		private TableLayout tableLayout;
-		public RecordView(Context context,TableLayout layout, List<MineSweeperGameInfo> records) {
-			this.tableLayout=layout;
+		public RecordView(Context context, List<MineSweeperGameInfo> records) {
 			for(MineSweeperGameInfo record:records){
 				RecordRow row = new RecordRow(context,record);
 				tableLayout.addView(row);
